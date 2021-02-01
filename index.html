@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head> </head>
+  <body>
+    <button id="pair">PAIR</button>
+    <button id="list">LIST</button>
+    <button id="connectGatt">CONNECT GATT</button>
+    <script>
+      let theDevice;
+      let devices;
+      function onClickRequestDevices() {
+        async function request() {
+          let device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [0x1700],
+          });
+          console.log(device);
+        }
+
+        request();
+      }
+
+      function onClickGetDevices() {
+        async function request() {
+          devices = await navigator.bluetooth.getDevices();
+          if (devices) {
+            console.log(devices);
+
+            for (let device of devices) {
+              if (device.name === "LE-Solar Flare") {
+                console.log(device);
+                theDevice = device;
+              }
+            }
+          }
+        }
+
+        request();
+      }
+
+      function onClickConnectToGatt() {
+        async function connectGatt() {
+          if (theDevice) {
+            const server = await theDevice.gatt?.connect();
+            console.log(server);
+          }
+        }
+
+        connectGatt();
+      }
+
+      document.querySelector("#pair").addEventListener("click", () => {
+        onClickRequestDevices();
+      });
+
+      document.querySelector("#list").addEventListener("click", () => {
+        onClickGetDevices();
+      });
+
+      document.querySelector("#connectGatt").addEventListener("click", () => {
+        onClickConnectToGatt();
+      });
+    </script>
+  </body>
+</html>
