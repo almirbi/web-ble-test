@@ -37,12 +37,33 @@
 
         request();
       }
-
+      let abortController = new AbortController();
       function onClickConnectToGatt() {
         async function connectGatt() {
           if (theDevice) {
-            const server = await theDevice.gatt?.connect();
-            console.log(server);
+            await theDevice.watchAdvertisements({
+              signal: abortController.signal,
+            });
+
+            theDevice.addEventListener("advertisementreceived", async (evt) => {
+              console.log(evt);
+              // Stop the scan to conserve power on mobile devices.
+              abortController.abort();
+
+              // Advertisement data can be read from |evt|.
+              let deviceName = evt.name;
+              let uuids = evt.uuids;
+              let appearance = evt.appearance;
+              let pathloss = evt.txPower - evt.rssi;
+              let manufacturerData = evt.manufacturerData;
+              let serviceData = evt.serviceData;
+
+              // At this point, we know that the device is in range, and we can attempt
+              // to connect to it.
+
+              const server = await evt.device.gatt.connect();
+              console.log(server);
+            });
           }
         }
 
